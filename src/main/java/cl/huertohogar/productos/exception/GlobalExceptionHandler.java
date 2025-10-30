@@ -12,10 +12,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    
+    // Producto
+
     @ExceptionHandler(ProductoNotFoundException.class)
-    public ResponseEntity<Map<String,Object>> handleProductoNotFoundException(ProductoNotFoundException ex) {
-        Map<String,Object> error = new LinkedHashMap<>();
+    public ResponseEntity<Map<String, Object>> handleProductoNotFoundException(ProductoNotFoundException ex) {
+        Map<String, Object> error = new LinkedHashMap<>();
         error.put("timestamp", LocalDateTime.now());
         error.put("message", ex.getMessage());
         error.put("status", HttpStatus.NOT_FOUND.value());
@@ -23,17 +24,41 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ProductoNotValidException.class)
-    public ResponseEntity<Map<String,Object>> handleProductoNotValidException(ProductoNotValidException ex) {
-        Map<String,Object> error = new LinkedHashMap<>();
+    public ResponseEntity<Map<String, Object>> handleProductoNotValidException(ProductoNotValidException ex) {
+        Map<String, Object> error = new LinkedHashMap<>();
         error.put("timestamp", LocalDateTime.now());
         error.put("message", ex.getMessage());
         error.put("status", HttpStatus.BAD_REQUEST.value());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    // Categoria
+
+    @ExceptionHandler(CategoriaNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleCategoriaNotValidException(CategoriaNotValidException ex) {
+        Map<String, Object> error = new LinkedHashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("message", ex.getMessage());
+        error.put("status", HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(CategoriaNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleCategoriaNotFoundException(CategoriaNotFoundException ex) {
+        Map<String, Object> error = new LinkedHashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("message", ex.getMessage());
+        error.put("status", HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    // Exception
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String,Object>> handleGenericException(Exception ex) {
-        Map<String,Object> error = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        Map<String, Object> error = new HashMap<>();
         error.put("timestamp", LocalDateTime.now());
         error.put("message", "Error interno del servidor: " + ex.getMessage());
         error.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
