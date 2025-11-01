@@ -54,6 +54,30 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    // Pais Origen
+
+    @ExceptionHandler(PaisOrigenNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handlePaisOrigenNotFoundException(PaisOrigenNotFoundException ex) {
+        Map<String,Object> error = new LinkedHashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("message", ex);
+        error.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(PaisOrigenNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handlePaisOrigenNotValidException(PaisOrigenNotValidException ex) {
+        Map<String,Object> error = new LinkedHashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("message", ex);
+        error.put("status",HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+
+
     // Exception
 
     @ExceptionHandler(Exception.class)
