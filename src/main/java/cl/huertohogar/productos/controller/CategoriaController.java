@@ -3,13 +3,21 @@ package cl.huertohogar.productos.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cl.huertohogar.productos.model.Categoria;
-import cl.huertohogar.productos.repository.CategoriaRepository;
 import cl.huertohogar.productos.service.CategoriaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,62 +30,132 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/v1/categorias")
+@Tag(name = "Categorías", description = "API para gestión de categorías de productos")
 public class CategoriaController {
 
-    private final CategoriaRepository categoriaRepository;
     @Autowired
     CategoriaService categoriaService;
 
-
-
-    CategoriaController(CategoriaRepository categoriaRepository) {
-        this.categoriaRepository = categoriaRepository;
-    }
-
-    // GET - Obtiene todas las categorias
+    @Operation(
+        summary = "Listar todas las categorías",
+        description = "Obtiene la lista completa de categorías registradas"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encontraron categorías",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(value = "{\"timestamp\":\"2025-11-01T10:30:00\",\"message\":\"No se encontraron categorias\",\"status\":404}")
+            )
+        )
+    })
     @GetMapping("")
     public ResponseEntity<List<Categoria>> getCategorias() {
         return ResponseEntity.ok(categoriaService.findAll());
     }
 
-    // GET - Obtiene categoria por id
+    @Operation(
+        summary = "Obtener categoría por ID",
+        description = "Busca y retorna una categoría específica"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Categoría encontrada"),
+        @ApiResponse(responseCode = "404", description = "Categoría no encontrada")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<Categoria> getCategoriaById(@PathVariable Integer id) {
+    public ResponseEntity<Categoria> getCategoriaById(
+            @Parameter(description = "ID de la categoría", example = "1")
+            @PathVariable Integer id) {
         return ResponseEntity.ok(categoriaService.findById(id));
     }
     
-    
-    // POST - Crea una nueva categoria
+    @Operation(
+        summary = "Crear nueva categoría",
+        description = "Registra una nueva categoría en el sistema"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Categoría creada exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
     @PostMapping("")
-    public ResponseEntity<Categoria> createCategoria(@RequestBody Categoria categoria) {
-        return ResponseEntity.ok(categoriaService.save(categoria));
+    public ResponseEntity<Categoria> createCategoria(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Datos de la categoría a crear",
+                content = @Content(
+                    schema = @Schema(implementation = Categoria.class),
+                    examples = @ExampleObject(
+                        value = "{\"nombreCategoria\":\"Verduras\",\"descripcionCategoria\":\"Verduras frescas y orgánicas\"}"
+                    )
+                )
+            )
+            @RequestBody Categoria categoria) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoriaService.save(categoria));
     }
 
-    // PUT - Actualiza una categoria completa
+    @Operation(
+        summary = "Actualizar categoría completa",
+        description = "Actualiza todos los campos de una categoría existente"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Categoría actualizada"),
+        @ApiResponse(responseCode = "404", description = "Categoría no encontrada"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<Categoria> putCategoria(@PathVariable Integer id, @RequestBody Categoria categoria) {
-
-        Categoria catActualizada = categoriaService.update(id, categoria);
-
-
-        return ResponseEntity.ok(catActualizada);
+    public ResponseEntity<Categoria> putCategoria(
+            @Parameter(description = "ID de la categoría", example = "1")
+            @PathVariable Integer id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Datos completos de la categoría",
+                content = @Content(
+                    examples = @ExampleObject(
+                        value = "{\"nombreCategoria\":\"Frutas Tropicales\",\"descripcionCategoria\":\"Frutas exóticas importadas\"}"
+                    )
+                )
+            )
+            @RequestBody Categoria categoria) {
+        return ResponseEntity.ok(categoriaService.update(id, categoria));
     }
 
-    // PATCH - Actualiza parcialmente una categoria
+    @Operation(
+        summary = "Actualizar categoría parcialmente",
+        description = "Actualiza solo los campos enviados de una categoría"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Categoría actualizada parcialmente"),
+        @ApiResponse(responseCode = "404", description = "Categoría no encontrada")
+    })
     @PatchMapping("/{id}")
     public ResponseEntity<Categoria> patchCategoria(
-        @PathVariable Integer id, 
-        @RequestBody Categoria categoria) {
-
-        Categoria catActualizada = categoriaService.patch(id, categoria);
-        return ResponseEntity.ok(catActualizada);
+            @Parameter(description = "ID de la categoría", example = "1")
+            @PathVariable Integer id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Campos a actualizar",
+                content = @Content(
+                    examples = @ExampleObject(
+                        value = "{\"descripcionCategoria\":\"Nueva descripción actualizada\"}"
+                    )
+                )
+            )
+            @RequestBody Categoria categoria) {
+        return ResponseEntity.ok(categoriaService.patch(id, categoria));
     }
 
-    // DELETE - Elimina una categoria por ID
+    @Operation(
+        summary = "Eliminar categoría",
+        description = "Elimina permanentemente una categoría del sistema"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Categoría eliminada"),
+        @ApiResponse(responseCode = "404", description = "Categoría no encontrada")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategoria(@PathVariable String id) {
-
-        categoriaRepository.deleteById(Integer.parseInt(id));
+    public ResponseEntity<Void> deleteCategoria(
+            @Parameter(description = "ID de la categoría a eliminar", example = "1")
+            @PathVariable Integer id) {
+        categoriaService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

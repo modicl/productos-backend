@@ -3,6 +3,7 @@ package cl.huertohogar.productos.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,60 +16,145 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cl.huertohogar.productos.model.PaisOrigen;
-import cl.huertohogar.productos.repository.PaisOrigenRepository;
 import cl.huertohogar.productos.service.PaisOrigenService;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 
 @RestController
 @RequestMapping("/api/v1/paises")
+@Tag(name = "Países de Origen", description = "API para gestión de países de origen de productos")
 public class PaisOrigenController {
 
-    private final PaisOrigenRepository paisOrigenRepository;
-
     @Autowired
-    PaisOrigenService paisOrgenService;
+    PaisOrigenService paisOrigenService;
 
-    public PaisOrigenController(PaisOrigenRepository paisOrigenRepository) {
-        this.paisOrigenRepository = paisOrigenRepository;
-    }
-
-    // GET - Obtiene todos los paises de origen
+    @Operation(
+        summary = "Listar todos los países",
+        description = "Obtiene la lista completa de países de origen registrados"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encontraron países",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(value = "{\"timestamp\":\"2025-11-01T10:30:00\",\"message\":\"No se encontraron países de origen\",\"status\":404}")
+            )
+        )
+    })
     @GetMapping("")
     public ResponseEntity<List<PaisOrigen>> getAllPaises() {
-        return ResponseEntity.ok(paisOrgenService.findAll());
+        return ResponseEntity.ok(paisOrigenService.findAll());
     }
 
-    // GET - Obtiene pais por ID
-
+    @Operation(
+        summary = "Obtener país por ID",
+        description = "Busca y retorna un país de origen específico"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "País encontrado"),
+        @ApiResponse(responseCode = "404", description = "País no encontrado")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<PaisOrigen> getPaisById(@PathVariable Integer id) {
-        return ResponseEntity.ok(paisOrgenService.findById(id));
+    public ResponseEntity<PaisOrigen> getPaisById(
+            @Parameter(description = "ID del país", example = "1")
+            @PathVariable Integer id) {
+        return ResponseEntity.ok(paisOrigenService.findById(id));
     }
-    
 
-    // POST - Crea un nuevo pais de origen
+    @Operation(
+        summary = "Crear nuevo país",
+        description = "Registra un nuevo país de origen en el sistema"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "País creado exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
     @PostMapping("")
-    public ResponseEntity<PaisOrigen> createPais(@RequestBody PaisOrigen pais) {
-        return ResponseEntity.ok(paisOrgenService.save(pais));
+    public ResponseEntity<PaisOrigen> createPais(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Datos del país a crear",
+                content = @Content(
+                    schema = @Schema(implementation = PaisOrigen.class),
+                    examples = @ExampleObject(
+                        value = "{\"nombre\":\"Chile\"}"
+                    )
+                )
+            )
+            @RequestBody PaisOrigen pais) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(paisOrigenService.save(pais));
     }
 
-    // PUT - Actualiza un pais completo
+    @Operation(
+        summary = "Actualizar país completo",
+        description = "Actualiza todos los campos de un país existente"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "País actualizado"),
+        @ApiResponse(responseCode = "404", description = "País no encontrado"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<PaisOrigen> updatePais(@PathVariable Integer id, @RequestBody PaisOrigen pais) {
-        return ResponseEntity.ok(paisOrgenService.update(id, pais));
+    public ResponseEntity<PaisOrigen> updatePais(
+            @Parameter(description = "ID del país", example = "1")
+            @PathVariable Integer id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Datos completos del país",
+                content = @Content(
+                    examples = @ExampleObject(
+                        value = "{\"nombre\":\"Argentina\"}"
+                    )
+                )
+            )
+            @RequestBody PaisOrigen pais) {
+        return ResponseEntity.ok(paisOrigenService.update(id, pais));
     }
 
-    // PATCH - Actualiza parcialmente un pais
+    @Operation(
+        summary = "Actualizar país parcialmente",
+        description = "Actualiza solo los campos enviados de un país"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "País actualizado parcialmente"),
+        @ApiResponse(responseCode = "404", description = "País no encontrado")
+    })
     @PatchMapping("/{id}")
-    public ResponseEntity<PaisOrigen> patchPais(@PathVariable Integer id, @RequestBody PaisOrigen pais) {
-        return ResponseEntity.ok(paisOrgenService.patch(id, pais));
+    public ResponseEntity<PaisOrigen> patchPais(
+            @Parameter(description = "ID del país", example = "1")
+            @PathVariable Integer id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Campos a actualizar",
+                content = @Content(
+                    examples = @ExampleObject(
+                        value = "{\"nombre\":\"Perú\"}"
+                    )
+                )
+            )
+            @RequestBody PaisOrigen pais) {
+        return ResponseEntity.ok(paisOrigenService.patch(id, pais));
     }
 
-    // DELETE - Elimina un pais por ID
+    @Operation(
+        summary = "Eliminar país",
+        description = "Elimina permanentemente un país del sistema"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "País eliminado"),
+        @ApiResponse(responseCode = "404", description = "País no encontrado")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePais(@PathVariable Integer id) {
-        paisOrigenRepository.deleteById(id);
+    public ResponseEntity<Void> deletePais(
+            @Parameter(description = "ID del país a eliminar", example = "1")
+            @PathVariable Integer id) {
+        paisOrigenService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

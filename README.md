@@ -37,6 +37,12 @@ $env:DB_PASSWORD="password"
 java -jar target/*.jar
 ```
 
+3. Acceder a la documentación Swagger UI:
+
+Una vez iniciado el servidor, abre en tu navegador:
+- **Swagger UI:** http://localhost:8080/swagger-ui.html
+- **OpenAPI JSON:** http://localhost:8080/v3/api-docs
+
 ## Endpoints principales (base `/api/v1`)
 - Productos: `/productos`
   - GET `/api/v1/productos` - listar
@@ -66,9 +72,10 @@ Body JSON (crear):
 ## Stack / herramientas
 - Lenguajes: Java
 - Frameworks/librerías: Spring Boot (Spring Web, Spring Data JPA), Hibernate
+- Documentación API: Swagger/OpenAPI 3 (springdoc-openapi)
 - Base de datos: PostgreSQL
 - Build: Maven (wrapper `mvnw` incluido)
-- Otras: Lombok, HikariCP
+- Otras: Lombok, HikariCP, spring-dotenv
 
 ## Notas
 - El proyecto usa validaciones en servicios y `GlobalExceptionHandler` para respuestas consistentes.
