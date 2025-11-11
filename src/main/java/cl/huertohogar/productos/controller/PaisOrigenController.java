@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import cl.huertohogar.productos.config.RequireRole;
 import cl.huertohogar.productos.model.PaisOrigen;
 import cl.huertohogar.productos.service.PaisOrigenService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +30,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/v1/paises")
-@Tag(name = "Países de Origen", description = "API para gestión de países de origen de productos")
+@Tag(
+    name = "Países de Origen",
+    description = """
+        API REST para la gestión de países de origen de productos.
+        
+        Los países de origen permiten identificar la procedencia geográfica de cada producto,
+        información importante para trazabilidad y preferencias de consumo local.
+        
+        **Permisos:**
+        - 🔓 GET: Público (sin autenticación)
+        - 🔒 POST/PUT/PATCH/DELETE: Requiere autenticación y rol ADMIN
+        """
+)
 public class PaisOrigenController {
 
     @Autowired
@@ -72,13 +85,24 @@ public class PaisOrigenController {
 
     @Operation(
         summary = "Crear nuevo país",
-        description = "Registra un nuevo país de origen en el sistema"
+        description = "Registra un nuevo país de origen en el sistema. **Requiere rol ADMIN**"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "País creado exitosamente"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autorizado - Token inválido o no proporcionado",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Requiere rol ADMIN",
+            content = @Content(mediaType = "application/json")
+        )
     })
     @PostMapping("")
+    @RequireRole({"ADMIN"})
     public ResponseEntity<PaisOrigen> createPais(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                 description = "Datos del país a crear",
@@ -95,14 +119,25 @@ public class PaisOrigenController {
 
     @Operation(
         summary = "Actualizar país completo",
-        description = "Actualiza todos los campos de un país existente"
+        description = "Actualiza todos los campos de un país existente. **Requiere rol ADMIN**"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "País actualizado"),
         @ApiResponse(responseCode = "404", description = "País no encontrado"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autorizado - Token inválido o no proporcionado",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Requiere rol ADMIN",
+            content = @Content(mediaType = "application/json")
+        )
     })
     @PutMapping("/{id}")
+    @RequireRole({"ADMIN"})
     public ResponseEntity<PaisOrigen> updatePais(
             @Parameter(description = "ID del país", example = "1")
             @PathVariable Integer id,
@@ -120,13 +155,24 @@ public class PaisOrigenController {
 
     @Operation(
         summary = "Actualizar país parcialmente",
-        description = "Actualiza solo los campos enviados de un país"
+        description = "Actualiza solo los campos enviados de un país. **Requiere rol ADMIN**"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "País actualizado parcialmente"),
-        @ApiResponse(responseCode = "404", description = "País no encontrado")
+        @ApiResponse(responseCode = "404", description = "País no encontrado"),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autorizado - Token inválido o no proporcionado",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Requiere rol ADMIN",
+            content = @Content(mediaType = "application/json")
+        )
     })
     @PatchMapping("/{id}")
+    @RequireRole({"ADMIN"})
     public ResponseEntity<PaisOrigen> patchPais(
             @Parameter(description = "ID del país", example = "1")
             @PathVariable Integer id,
@@ -144,13 +190,24 @@ public class PaisOrigenController {
 
     @Operation(
         summary = "Eliminar país",
-        description = "Elimina permanentemente un país del sistema"
+        description = "Elimina permanentemente un país del sistema. **Requiere rol ADMIN**"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "País eliminado"),
-        @ApiResponse(responseCode = "404", description = "País no encontrado")
+        @ApiResponse(responseCode = "404", description = "País no encontrado"),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autorizado - Token inválido o no proporcionado",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Requiere rol ADMIN",
+            content = @Content(mediaType = "application/json")
+        )
     })
     @DeleteMapping("/{id}")
+    @RequireRole({"ADMIN"})
     public ResponseEntity<Void> deletePais(
             @Parameter(description = "ID del país a eliminar", example = "1")
             @PathVariable Integer id) {

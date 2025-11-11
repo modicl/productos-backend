@@ -19,17 +19,32 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "pais_origen")
-@Schema(description = "Entidad que representa un país de origen de productos")
+@Schema(
+    description = "Entidad que representa un país de origen de productos",
+    title = "País de Origen",
+    example = "{\"idPais\":1,\"nombre\":\"Chile\"}"
+)
 public class PaisOrigen {
     
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     @Column(name = "id_pais_origen", nullable = false)
-    @Schema(description = "Identificador único del país", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(
+        description = "Identificador único autogenerado del país",
+        example = "1",
+        accessMode = Schema.AccessMode.READ_ONLY,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Integer idPais;
 
     @Column(name = "nombre_pais", nullable = false)
-    @Schema(description = "Nombre del país", example = "Chile", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Nombre oficial del país",
+        example = "Chile",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        minLength = 1,
+        maxLength = 100
+    )
     private String nombre;
 
     @OneToMany(mappedBy = "paisOrigen")

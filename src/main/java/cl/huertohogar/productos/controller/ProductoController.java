@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import cl.huertohogar.productos.config.RequireRole;
 import cl.huertohogar.productos.model.Producto;
 import cl.huertohogar.productos.service.ProductoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +30,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/v1/productos")
-@Tag(name = "Productos", description = "API para gestión de productos")
+@Tag(
+    name = "Productos",
+    description = """
+        API REST para la gestión completa de productos del catálogo HuertoHogar.
+        
+        Permite realizar operaciones CRUD (Crear, Leer, Actualizar, Eliminar) sobre productos,
+        así como búsquedas especializadas por categoría y rango de precio.
+        
+        **Permisos:**
+        - 🔓 GET: Público (sin autenticación)
+        - 🔒 POST/PUT/PATCH/DELETE: Requiere autenticación y rol ADMIN
+        """
+)
 public class ProductoController {
     
     @Autowired
@@ -37,7 +50,7 @@ public class ProductoController {
 
     @Operation(
         summary = "Crear un nuevo producto",
-        description = "Crea un nuevo producto en el sistema con todos sus detalles"
+        description = "Crea un nuevo producto en el sistema con todos sus detalles. **Requiere rol ADMIN**"
     )
     @ApiResponses(value = {
         @ApiResponse(
@@ -55,9 +68,20 @@ public class ProductoController {
                 mediaType = "application/json",
                 examples = @ExampleObject(value = "{\"timestamp\":\"2025-11-01T10:30:00\",\"message\":\"El nombre del producto es obligatorio\",\"status\":400}")
             )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autorizado - Token inválido o no proporcionado",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Requiere rol ADMIN",
+            content = @Content(mediaType = "application/json")
         )
     })
     @PostMapping("")
+    @RequireRole({"ADMIN"})
     public ResponseEntity<Producto> createProducto(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                 description = "Datos del producto a crear",
@@ -125,7 +149,7 @@ public class ProductoController {
 
     @Operation(
         summary = "Actualizar producto completo",
-        description = "Actualiza todos los campos de un producto existente. Requiere enviar todos los datos."
+        description = "Actualiza todos los campos de un producto existente. Requiere enviar todos los datos. **Requiere rol ADMIN**"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Producto actualizado exitosamente"),
@@ -138,9 +162,20 @@ public class ProductoController {
             responseCode = "400",
             description = "Datos inválidos",
             content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autorizado - Token inválido o no proporcionado",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Requiere rol ADMIN",
+            content = @Content(mediaType = "application/json")
         )
     })
     @PutMapping("/{id}")
+    @RequireRole({"ADMIN"})
     public ResponseEntity<Producto> updateProducto(
             @Parameter(description = "ID del producto a actualizar", example = "1")
             @PathVariable Integer id,
@@ -160,14 +195,25 @@ public class ProductoController {
 
     @Operation(
         summary = "Actualizar producto parcialmente",
-        description = "Actualiza solo los campos especificados de un producto. No es necesario enviar todos los datos."
+        description = "Actualiza solo los campos especificados de un producto. No es necesario enviar todos los datos. **Requiere rol ADMIN**"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Producto actualizado parcialmente"),
         @ApiResponse(responseCode = "404", description = "Producto no encontrado"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autorizado - Token inválido o no proporcionado",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Requiere rol ADMIN",
+            content = @Content(mediaType = "application/json")
+        )
     })
     @PatchMapping("/{id}")
+    @RequireRole({"ADMIN"})
     public ResponseEntity<Producto> partialUpdateProducto(
             @Parameter(description = "ID del producto", example = "1")
             @PathVariable Integer id,
@@ -187,7 +233,7 @@ public class ProductoController {
 
     @Operation(
         summary = "Eliminar producto",
-        description = "Elimina permanentemente un producto del sistema"
+        description = "Elimina permanentemente un producto del sistema. **Requiere rol ADMIN**"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Producto eliminado exitosamente"),
@@ -195,9 +241,20 @@ public class ProductoController {
             responseCode = "404",
             description = "Producto no encontrado",
             content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autorizado - Token inválido o no proporcionado",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Requiere rol ADMIN",
+            content = @Content(mediaType = "application/json")
         )
     })
     @DeleteMapping("/{id}")
+    @RequireRole({"ADMIN"})
     public ResponseEntity<Void> deleteProducto(
             @Parameter(description = "ID del producto a eliminar", example = "1")
             @PathVariable Integer id) {

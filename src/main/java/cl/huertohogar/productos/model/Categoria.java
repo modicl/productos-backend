@@ -17,21 +17,42 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Entidad que representa una categoría de productos")
+@Schema(
+    description = "Entidad que representa una categoría de productos en el sistema",
+    title = "Categoría",
+    example = "{\"idCategoria\":1,\"nombreCategoria\":\"Verduras\",\"descripcionCategoria\":\"Verduras frescas y orgánicas de temporada\"}"
+)
 public class Categoria {
     
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     @Column(name = "id_categoria", nullable = false)
-    @Schema(description = "Identificador único de la categoría", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(
+        description = "Identificador único autogenerado de la categoría",
+        example = "1",
+        accessMode = Schema.AccessMode.READ_ONLY,
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Integer idCategoria;
 
     @Column(name = "nombre_categoria", nullable = false)
-    @Schema(description = "Nombre de la categoría", example = "Verduras", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Nombre de la categoría",
+        example = "Verduras",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        minLength = 1,
+        maxLength = 100
+    )
     private String nombreCategoria;
 
     @Column(name = "descripcion_categoria", nullable = false)
-    @Schema(description = "Descripción de la categoría", example = "Verduras frescas y orgánicas", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+        description = "Descripción detallada de la categoría y tipos de productos que incluye",
+        example = "Verduras frescas y orgánicas de temporada, cultivadas localmente",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        minLength = 1,
+        maxLength = 500
+    )
     private String descripcionCategoria;
 
     @OneToMany(mappedBy = "categoria")

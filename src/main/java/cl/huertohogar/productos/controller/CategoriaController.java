@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import cl.huertohogar.productos.config.RequireRole;
 import cl.huertohogar.productos.model.Categoria;
 import cl.huertohogar.productos.service.CategoriaService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +31,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/v1/categorias")
-@Tag(name = "Categorías", description = "API para gestión de categorías de productos")
+@Tag(
+    name = "Categorías",
+    description = """
+        API REST para la gestión de categorías de productos.
+        
+        Las categorías permiten organizar y clasificar los productos del catálogo,
+        facilitando la navegación y búsqueda de productos por tipo.
+        
+        **Permisos:**
+        - 🔓 GET: Público (sin autenticación)
+        - 🔒 POST/PUT/PATCH/DELETE: Requiere autenticación y rol ADMIN
+        """
+)
 public class CategoriaController {
 
     @Autowired
@@ -73,13 +86,24 @@ public class CategoriaController {
     
     @Operation(
         summary = "Crear nueva categoría",
-        description = "Registra una nueva categoría en el sistema"
+        description = "Registra una nueva categoría en el sistema. **Requiere rol ADMIN**"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Categoría creada exitosamente"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autorizado - Token inválido o no proporcionado",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Requiere rol ADMIN",
+            content = @Content(mediaType = "application/json")
+        )
     })
     @PostMapping("")
+    @RequireRole({"ADMIN"})
     public ResponseEntity<Categoria> createCategoria(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                 description = "Datos de la categoría a crear",
@@ -96,14 +120,25 @@ public class CategoriaController {
 
     @Operation(
         summary = "Actualizar categoría completa",
-        description = "Actualiza todos los campos de una categoría existente"
+        description = "Actualiza todos los campos de una categoría existente. **Requiere rol ADMIN**"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Categoría actualizada"),
         @ApiResponse(responseCode = "404", description = "Categoría no encontrada"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autorizado - Token inválido o no proporcionado",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Requiere rol ADMIN",
+            content = @Content(mediaType = "application/json")
+        )
     })
     @PutMapping("/{id}")
+    @RequireRole({"ADMIN"})
     public ResponseEntity<Categoria> putCategoria(
             @Parameter(description = "ID de la categoría", example = "1")
             @PathVariable Integer id,
@@ -121,13 +156,24 @@ public class CategoriaController {
 
     @Operation(
         summary = "Actualizar categoría parcialmente",
-        description = "Actualiza solo los campos enviados de una categoría"
+        description = "Actualiza solo los campos enviados de una categoría. **Requiere rol ADMIN**"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Categoría actualizada parcialmente"),
-        @ApiResponse(responseCode = "404", description = "Categoría no encontrada")
+        @ApiResponse(responseCode = "404", description = "Categoría no encontrada"),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autorizado - Token inválido o no proporcionado",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Requiere rol ADMIN",
+            content = @Content(mediaType = "application/json")
+        )
     })
     @PatchMapping("/{id}")
+    @RequireRole({"ADMIN"})
     public ResponseEntity<Categoria> patchCategoria(
             @Parameter(description = "ID de la categoría", example = "1")
             @PathVariable Integer id,
@@ -145,13 +191,24 @@ public class CategoriaController {
 
     @Operation(
         summary = "Eliminar categoría",
-        description = "Elimina permanentemente una categoría del sistema"
+        description = "Elimina permanentemente una categoría del sistema. **Requiere rol ADMIN**"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Categoría eliminada"),
-        @ApiResponse(responseCode = "404", description = "Categoría no encontrada")
+        @ApiResponse(responseCode = "404", description = "Categoría no encontrada"),
+        @ApiResponse(
+            responseCode = "401",
+            description = "No autorizado - Token inválido o no proporcionado",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Requiere rol ADMIN",
+            content = @Content(mediaType = "application/json")
+        )
     })
     @DeleteMapping("/{id}")
+    @RequireRole({"ADMIN"})
     public ResponseEntity<Void> deleteCategoria(
             @Parameter(description = "ID de la categoría a eliminar", example = "1")
             @PathVariable Integer id) {
