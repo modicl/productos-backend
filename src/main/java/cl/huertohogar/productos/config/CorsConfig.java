@@ -30,6 +30,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 // Orígenes permitidos
                 .allowedOrigins(
                     "https://huertohogar.nyc3.cdn.digitaloceanspaces.com",  // Producción
+                    "http://huertohogar-frontend.s3-website-us-east-1.amazonaws.com",  // AWS S3
                     "http://localhost:3000",                                 // React dev
                     "http://localhost:5173",                                 // Vite dev
                     "http://localhost:4200"                                  // Angular dev (si lo usas)
