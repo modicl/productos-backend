@@ -119,6 +119,36 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    // ==================== COMENTARIO ====================
+
+    /**
+     * Maneja errores cuando no se encuentra un comentario.
+     * @param ex Excepción lanzada
+     * @return ResponseEntity con código 404 y detalles del error
+     */
+    @ExceptionHandler(ComentarioNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleComentarioNotFoundException(ComentarioNotFoundException ex) {
+        Map<String, Object> error = new LinkedHashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("message", ex.getMessage());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    /**
+     * Maneja errores de validación de datos de comentario.
+     * @param ex Excepción lanzada
+     * @return ResponseEntity con código 400 y detalles del error
+     */
+    @ExceptionHandler(ComentarioNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleComentarioNotValidException(ComentarioNotValidException ex) {
+        Map<String, Object> error = new LinkedHashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("message", ex.getMessage());
+        error.put("status", HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
     // ==================== EXCEPCIONES GENERALES ====================
     
     /**
