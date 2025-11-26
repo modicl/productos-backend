@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cl.huertohogar.productos.config.RequireRole;
+import cl.huertohogar.productos.dto.ActualizacionStockRequestDTO;
+import cl.huertohogar.productos.dto.ActualizacionStockResponseDTO;
 import cl.huertohogar.productos.model.Producto;
 import cl.huertohogar.productos.service.ProductoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,275 +32,141 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/v1/productos")
-@Tag(
-    name = "Productos",
-    description = """
+@Tag(name = "Productos", description = """
         API REST para la gestión completa de productos del catálogo HuertoHogar.
-        
+
         Permite realizar operaciones CRUD (Crear, Leer, Actualizar, Eliminar) sobre productos,
         así como búsquedas especializadas por categoría y rango de precio.
-        
+
         **Permisos:**
         - 🔓 GET: Público (sin autenticación)
         - 🔒 POST/PUT/PATCH/DELETE: Requiere autenticación y rol ADMIN
-        """
-)
+        """)
 public class ProductoController {
-    
+
     @Autowired
     ProductoService productoService;
 
-    @Operation(
-        summary = "Crear un nuevo producto",
-        description = "Crea un nuevo producto en el sistema con todos sus detalles. **Requiere rol ADMIN**"
-    )
+    @Operation(summary = "Crear un nuevo producto", description = "Crea un nuevo producto en el sistema con todos sus detalles. **Requiere rol ADMIN**")
     @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "201",
-            description = "Producto creado exitosamente",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = Producto.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Datos de entrada inválidos",
-            content = @Content(
-                mediaType = "application/json",
-                examples = @ExampleObject(value = "{\"timestamp\":\"2025-11-01T10:30:00\",\"message\":\"El nombre del producto es obligatorio\",\"status\":400}")
-            )
-        ),
-        @ApiResponse(
-            responseCode = "401",
-            description = "No autorizado - Token inválido o no proporcionado",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Acceso denegado - Requiere rol ADMIN",
-            content = @Content(mediaType = "application/json")
-        )
+            @ApiResponse(responseCode = "201", description = "Producto creado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Producto.class))),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"timestamp\":\"2025-11-01T10:30:00\",\"message\":\"El nombre del producto es obligatorio\",\"status\":400}"))),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token inválido o no proporcionado", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado - Requiere rol ADMIN", content = @Content(mediaType = "application/json"))
     })
     @PostMapping("")
-    @RequireRole({"ADMIN"})
+    @RequireRole({ "ADMIN" })
     public ResponseEntity<Producto> createProducto(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                description = "Datos del producto a crear",
-                required = true,
-                content = @Content(
-                    schema = @Schema(implementation = Producto.class),
-                    examples = @ExampleObject(
-                        name = "Ejemplo de producto",
-                        value = "{\"nombreProducto\":\"Tomate Cherry Orgánico\",\"categoria\":{\"idCategoria\":1},\"descripcionProducto\":\"Tomates cherry frescos y orgánicos\",\"precioProducto\":2500,\"stockProducto\":150,\"paisOrigen\":{\"idPais\":1},\"imagenUrl\":\"https://ejemplo.com/tomate.jpg\"}"
-                    )
-                )
-            )
-            @RequestBody Producto producto) {
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos del producto a crear", required = true, content = @Content(schema = @Schema(implementation = Producto.class), examples = @ExampleObject(name = "Ejemplo de producto", value = "{\"nombreProducto\":\"Tomate Cherry Orgánico\",\"categoria\":{\"idCategoria\":1},\"descripcionProducto\":\"Tomates cherry frescos y orgánicos\",\"precioProducto\":2500,\"stockProducto\":150,\"paisOrigen\":{\"idPais\":1},\"imagenUrl\":\"https://ejemplo.com/tomate.jpg\"}"))) @RequestBody Producto producto) {
         Producto nuevoProducto = productoService.save(producto);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoProducto);
     }
 
-    @Operation(
-        summary = "Listar todos los productos",
-        description = "Obtiene la lista completa de productos registrados en el sistema"
-    )
+    @Operation(summary = "Listar todos los productos", description = "Obtiene la lista completa de productos registrados en el sistema")
     @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Lista de productos obtenida exitosamente"
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "No se encontraron productos",
-            content = @Content(
-                mediaType = "application/json",
-                examples = @ExampleObject(value = "{\"timestamp\":\"2025-11-01T10:30:00\",\"message\":\"No se encontraron productos\",\"status\":404}")
-            )
-        )
+            @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente"),
+            @ApiResponse(responseCode = "404", description = "No se encontraron productos", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"timestamp\":\"2025-11-01T10:30:00\",\"message\":\"No se encontraron productos\",\"status\":404}")))
     })
     @GetMapping("")
     public ResponseEntity<List<Producto>> getProductos() {
         return ResponseEntity.ok(productoService.findAll());
     }
 
-    @Operation(
-        summary = "Obtener producto por ID",
-        description = "Busca y retorna un producto específico por su identificador único"
-    )
+    @Operation(summary = "Obtener producto por ID", description = "Busca y retorna un producto específico por su identificador único")
     @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Producto encontrado exitosamente"
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Producto no encontrado",
-            content = @Content(
-                mediaType = "application/json",
-                examples = @ExampleObject(value = "{\"timestamp\":\"2025-11-01T10:30:00\",\"message\":\"Producto no encontrado con id: 999\",\"status\":404}")
-            )
-        )
+            @ApiResponse(responseCode = "200", description = "Producto encontrado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"timestamp\":\"2025-11-01T10:30:00\",\"message\":\"Producto no encontrado con id: 999\",\"status\":404}")))
     })
     @GetMapping("/{id}")
     public ResponseEntity<Producto> getProductoById(
-            @Parameter(description = "ID del producto a buscar", example = "1")
-            @PathVariable Integer id) {
+            @Parameter(description = "ID del producto a buscar", example = "1") @PathVariable Integer id) {
         return ResponseEntity.ok(productoService.findById(id));
     }
 
-    @Operation(
-        summary = "Actualizar producto completo",
-        description = "Actualiza todos los campos de un producto existente. Requiere enviar todos los datos. **Requiere rol ADMIN**"
-    )
+    @Operation(summary = "Actualizar producto completo", description = "Actualiza todos los campos de un producto existente. Requiere enviar todos los datos. **Requiere rol ADMIN**")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Producto actualizado exitosamente"),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Producto no encontrado",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Datos inválidos",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "401",
-            description = "No autorizado - Token inválido o no proporcionado",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Acceso denegado - Requiere rol ADMIN",
-            content = @Content(mediaType = "application/json")
-        )
+            @ApiResponse(responseCode = "200", description = "Producto actualizado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token inválido o no proporcionado", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado - Requiere rol ADMIN", content = @Content(mediaType = "application/json"))
     })
     @PutMapping("/{id}")
-    @RequireRole({"ADMIN"})
+    @RequireRole({ "ADMIN" })
     public ResponseEntity<Producto> updateProducto(
-            @Parameter(description = "ID del producto a actualizar", example = "1")
-            @PathVariable Integer id,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                description = "Datos completos del producto actualizado",
-                content = @Content(
-                    schema = @Schema(implementation = Producto.class),
-                    examples = @ExampleObject(
-                        value = "{\"nombreProducto\":\"Tomate Cherry Premium\",\"categoria\":{\"idCategoria\":1},\"descripcionProducto\":\"Descripción actualizada\",\"precioProducto\":2800,\"stockProducto\":200,\"paisOrigen\":{\"idPais\":1},\"imagenUrl\":\"https://ejemplo.com/tomate-premium.jpg\"}"
-                    )
-                )
-            )
-            @RequestBody Producto producto) {
+            @Parameter(description = "ID del producto a actualizar", example = "1") @PathVariable Integer id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos completos del producto actualizado", content = @Content(schema = @Schema(implementation = Producto.class), examples = @ExampleObject(value = "{\"nombreProducto\":\"Tomate Cherry Premium\",\"categoria\":{\"idCategoria\":1},\"descripcionProducto\":\"Descripción actualizada\",\"precioProducto\":2800,\"stockProducto\":200,\"paisOrigen\":{\"idPais\":1},\"imagenUrl\":\"https://ejemplo.com/tomate-premium.jpg\"}"))) @RequestBody Producto producto) {
         Producto productoActualizado = productoService.update(id, producto);
         return ResponseEntity.ok(productoActualizado);
     }
 
-    @Operation(
-        summary = "Actualizar producto parcialmente",
-        description = "Actualiza solo los campos especificados de un producto. No es necesario enviar todos los datos. **Requiere rol ADMIN**"
-    )
+    @Operation(summary = "Actualizar producto parcialmente", description = "Actualiza solo los campos especificados de un producto. No es necesario enviar todos los datos. **Requiere rol ADMIN**")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Producto actualizado parcialmente"),
-        @ApiResponse(responseCode = "404", description = "Producto no encontrado"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-        @ApiResponse(
-            responseCode = "401",
-            description = "No autorizado - Token inválido o no proporcionado",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Acceso denegado - Requiere rol ADMIN",
-            content = @Content(mediaType = "application/json")
-        )
+            @ApiResponse(responseCode = "200", description = "Producto actualizado parcialmente"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token inválido o no proporcionado", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado - Requiere rol ADMIN", content = @Content(mediaType = "application/json"))
     })
     @PatchMapping("/{id}")
-    @RequireRole({"ADMIN"})
+    @RequireRole({ "ADMIN" })
     public ResponseEntity<Producto> partialUpdateProducto(
-            @Parameter(description = "ID del producto", example = "1")
-            @PathVariable Integer id,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                description = "Campos a actualizar (solo los que se envíen serán modificados)",
-                content = @Content(
-                    examples = @ExampleObject(
-                        name = "Actualizar solo precio y stock",
-                        value = "{\"precioProducto\":3000,\"stockProducto\":100}"
-                    )
-                )
-            )
-            @RequestBody Producto producto) {
+            @Parameter(description = "ID del producto", example = "1") @PathVariable Integer id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Campos a actualizar (solo los que se envíen serán modificados)", content = @Content(examples = @ExampleObject(name = "Actualizar solo precio y stock", value = "{\"precioProducto\":3000,\"stockProducto\":100}"))) @RequestBody Producto producto) {
         Producto productoActualizado = productoService.partialUpdate(id, producto);
         return ResponseEntity.ok(productoActualizado);
     }
 
-    @Operation(
-        summary = "Eliminar producto",
-        description = "Elimina permanentemente un producto del sistema. **Requiere rol ADMIN**"
-    )
+    @Operation(summary = "Eliminar producto", description = "Elimina permanentemente un producto del sistema. **Requiere rol ADMIN**")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Producto eliminado exitosamente"),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Producto no encontrado",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "401",
-            description = "No autorizado - Token inválido o no proporcionado",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Acceso denegado - Requiere rol ADMIN",
-            content = @Content(mediaType = "application/json")
-        )
+            @ApiResponse(responseCode = "204", description = "Producto eliminado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token inválido o no proporcionado", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado - Requiere rol ADMIN", content = @Content(mediaType = "application/json"))
     })
     @DeleteMapping("/{id}")
-    @RequireRole({"ADMIN"})
+    @RequireRole({ "ADMIN" })
     public ResponseEntity<Void> deleteProducto(
-            @Parameter(description = "ID del producto a eliminar", example = "1")
-            @PathVariable Integer id) {
+            @Parameter(description = "ID del producto a eliminar", example = "1") @PathVariable Integer id) {
         productoService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-        summary = "Buscar productos por categoría",
-        description = "Obtiene todos los productos que pertenecen a una categoría específica"
-    )
+    @Operation(summary = "Buscar productos por categoría", description = "Obtiene todos los productos que pertenecen a una categoría específica")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Productos encontrados"),
-        @ApiResponse(
-            responseCode = "404",
-            description = "No se encontraron productos para esa categoría",
-            content = @Content(mediaType = "application/json")
-        )
+            @ApiResponse(responseCode = "200", description = "Productos encontrados"),
+            @ApiResponse(responseCode = "404", description = "No se encontraron productos para esa categoría", content = @Content(mediaType = "application/json"))
     })
     @GetMapping("/categoria/{id}")
     public ResponseEntity<List<Producto>> getProductosPorCategoria(
-            @Parameter(description = "ID de la categoría", example = "1")
-            @PathVariable Integer id) {
+            @Parameter(description = "ID de la categoría", example = "1") @PathVariable Integer id) {
         return ResponseEntity.ok(productoService.findByCategoriaCustom(id));
     }
 
-    @Operation(
-        summary = "Buscar productos por rango de precio",
-        description = "Obtiene productos cuyo precio esté dentro del rango especificado (mín-máx)"
-    )
+    @Operation(summary = "Buscar productos por rango de precio", description = "Obtiene productos cuyo precio esté dentro del rango especificado (mín-máx)")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Productos encontrados"),
-        @ApiResponse(
-            responseCode = "404",
-            description = "No se encontraron productos en ese rango",
-            content = @Content(mediaType = "application/json")
-        )
+            @ApiResponse(responseCode = "200", description = "Productos encontrados"),
+            @ApiResponse(responseCode = "404", description = "No se encontraron productos en ese rango", content = @Content(mediaType = "application/json"))
     })
     @GetMapping("/precio")
     public ResponseEntity<List<Producto>> getProductosPorRangoPrecio(
-            @Parameter(description = "Precio mínimo", example = "1000")
-            @RequestParam Integer min,
-            @Parameter(description = "Precio máximo", example = "5000")
-            @RequestParam Integer max) {
+            @Parameter(description = "Precio mínimo", example = "1000") @RequestParam Integer min,
+            @Parameter(description = "Precio máximo", example = "5000") @RequestParam Integer max) {
         return ResponseEntity.ok(productoService.findByRangoPrecio(min, max));
+    }
+
+    @PostMapping("/stock/actualizar")
+    @Operation(summary = "Actualizar stock por orden", description = "Descuenta el stock de múltiples productos de forma transaccional. Si algún producto no tiene stock suficiente, toda la operación se revierte.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Stock actualizado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado"),
+            @ApiResponse(responseCode = "409", description = "Stock insuficiente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
+    @RequireRole("USER") // Un usuario puede usarlo!
+    public ResponseEntity<ActualizacionStockResponseDTO> actualizarStock(
+            @RequestBody ActualizacionStockRequestDTO request) {
+        ActualizacionStockResponseDTO response = productoService.actualizarStockPorOrden(request);
+        return ResponseEntity.ok(response);
     }
 }

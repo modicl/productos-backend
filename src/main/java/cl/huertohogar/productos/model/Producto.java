@@ -87,6 +87,16 @@ public class Producto {
     )
     private Integer stockProducto;
 
+    @Column(name = "stock_critico" , nullable = true)
+    @Schema(
+        description = "Cantidad de stock critico para gatillar advertencias",
+        example = "20",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        minimum = "0"
+    )
+    private Integer stockCritico;
+
+
     @ManyToOne
     @JoinColumn(name = "id_pais_origen", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "productos"})

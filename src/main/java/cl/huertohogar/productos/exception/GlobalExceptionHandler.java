@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -28,11 +29,12 @@ import io.swagger.v3.oas.annotations.Hidden;
 @ControllerAdvice
 @Hidden // Oculta este controller del Swagger UI
 public class GlobalExceptionHandler {
-    
+
     // ==================== PRODUCTO ====================
-    
+
     /**
      * Maneja errores cuando no se encuentra un producto.
+     * 
      * @param ex Excepción lanzada
      * @return ResponseEntity con código 404 y detalles del error
      */
@@ -47,6 +49,7 @@ public class GlobalExceptionHandler {
 
     /**
      * Maneja errores de validación de datos de producto.
+     * 
      * @param ex Excepción lanzada
      * @return ResponseEntity con código 400 y detalles del error
      */
@@ -60,9 +63,10 @@ public class GlobalExceptionHandler {
     }
 
     // ==================== CATEGORIA ====================
-    
+
     /**
      * Maneja errores de validación de datos de categoría.
+     * 
      * @param ex Excepción lanzada
      * @return ResponseEntity con código 400 y detalles del error
      */
@@ -77,6 +81,7 @@ public class GlobalExceptionHandler {
 
     /**
      * Maneja errores cuando no se encuentra una categoría.
+     * 
      * @param ex Excepción lanzada
      * @return ResponseEntity con código 404 y detalles del error
      */
@@ -90,9 +95,10 @@ public class GlobalExceptionHandler {
     }
 
     // ==================== PAIS ORIGEN ====================
-    
+
     /**
      * Maneja errores cuando no se encuentra un país de origen.
+     * 
      * @param ex Excepción lanzada
      * @return ResponseEntity con código 404 y detalles del error
      */
@@ -107,6 +113,7 @@ public class GlobalExceptionHandler {
 
     /**
      * Maneja errores de validación de datos de país de origen.
+     * 
      * @param ex Excepción lanzada
      * @return ResponseEntity con código 400 y detalles del error
      */
@@ -123,6 +130,7 @@ public class GlobalExceptionHandler {
 
     /**
      * Maneja errores cuando no se encuentra un comentario.
+     * 
      * @param ex Excepción lanzada
      * @return ResponseEntity con código 404 y detalles del error
      */
@@ -137,6 +145,7 @@ public class GlobalExceptionHandler {
 
     /**
      * Maneja errores de validación de datos de comentario.
+     * 
      * @param ex Excepción lanzada
      * @return ResponseEntity con código 400 y detalles del error
      */
@@ -150,10 +159,11 @@ public class GlobalExceptionHandler {
     }
 
     // ==================== EXCEPCIONES GENERALES ====================
-    
+
     /**
      * Maneja cualquier excepción no contemplada específicamente.
      * Catch-all para errores inesperados del servidor.
+     * 
      * @param ex Excepción lanzada
      * @return ResponseEntity con código 500 y detalles del error
      */
@@ -164,5 +174,22 @@ public class GlobalExceptionHandler {
         error.put("message", "Error interno del servidor: " + ex.getMessage());
         error.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    /**
+     * Maneja la excepción cuando sel stock es insuficente.
+     * Usado en el ProductoService en el metodo para actualizacion de stock.
+     * 
+     * @param ex Excepción lanzada
+     * @return ResponseEntity con código 409 y detalles del error
+     */
+
+    @ExceptionHandler(StockInsuficienteException.class)
+    public ResponseEntity<Map<String, Object>> handleStockInsuficiente(StockInsuficienteException ex) {
+        Map<String, Object> error = new LinkedHashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("message", ex.getMessage());
+        error.put("status", HttpStatus.CONFLICT.value());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 }
