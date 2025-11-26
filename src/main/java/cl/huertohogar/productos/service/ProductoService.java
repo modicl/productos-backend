@@ -111,6 +111,7 @@ public class ProductoService {
                     throw new StockInsuficienteException(
                             "No hay suficiente stock para el producto ID: " + item.getIdProducto());
                 }
+            }
 
                 // Actualizamos stock si todo esta bien
                 for (ItemOrdenDTO itemOrden : request.getItems()) {
@@ -131,7 +132,6 @@ public class ProductoService {
 
                 }
 
-            }
             return new ActualizacionStockResponseDTO(
                     true,
                     "Stock actualizado correctamente para la orden: " + request.getIdOrden(),

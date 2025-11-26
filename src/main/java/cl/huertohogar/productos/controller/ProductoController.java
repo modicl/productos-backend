@@ -163,6 +163,7 @@ public class ProductoController {
             @ApiResponse(responseCode = "409", description = "Stock insuficiente"),
             @ApiResponse(responseCode = "400", description = "Datos inválidos")
     })
+    @RequireRole({ "ADMIN" , "USER"})
     public ResponseEntity<ActualizacionStockResponseDTO> actualizarStock(
             @RequestBody ActualizacionStockRequestDTO request) {
         ActualizacionStockResponseDTO response = productoService.actualizarStockPorOrden(request);
