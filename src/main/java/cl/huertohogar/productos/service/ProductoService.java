@@ -95,48 +95,53 @@ public class ProductoService {
         List<String> errores = new ArrayList<>();
 
         try {
+            // FASE 1: Validación previa - Verificar que todos los productos existan y tengan stock
             for (ItemOrdenDTO item : request.getItems()) {
                 if (item.getCantidad() == null || item.getCantidad() <= 0) {
                     throw new ProductoNotValidException(
-                            "La cantidad del producto debe ser mayor a 0 para el producto ID: " + item.getIdProducto());
-
+                            "La cantidad debe ser mayor a 0 para el producto ID: " + item.getIdProducto());
                 }
 
                 Producto producto = productoRepository.findById(item.getIdProducto())
                         .orElseThrow(() -> new ProductoNotFoundException(
                                 "Producto no encontrado con id: " + item.getIdProducto()));
 
-                // Verificamos el stock
+                // Verificar stock disponible
                 if (producto.getStockProducto() < item.getCantidad()) {
                     throw new StockInsuficienteException(
-                            "No hay suficiente stock para el producto ID: " + item.getIdProducto());
+                            String.format("Stock insuficiente para el producto '%s' (ID: %d). Stock disponible: %d, Solicitado: %d",
+                                    producto.getNombreProducto(),
+                                    producto.getIdProducto(),
+                                    producto.getStockProducto(),
+                                    item.getCantidad()));
                 }
             }
 
-                // Actualizamos stock si todo esta bien
-                for (ItemOrdenDTO itemOrden : request.getItems()) {
-                    Producto productoOrden = productoRepository.findById(itemOrden.getIdProducto()).get();
-                    Integer stockAnterior = productoOrden.getStockProducto();
-                    Integer stockNuevo = stockAnterior - itemOrden.getCantidad();
-                    productoOrden.setStockProducto(stockNuevo);
-                    productoRepository.save(productoOrden);
+            // FASE 2: Actualización - Si todo está OK, actualizamos el stock
+            for (ItemOrdenDTO item : request.getItems()) {
+                Producto producto = productoRepository.findById(item.getIdProducto()).get();
 
-                    // Registramos el cambio con el nuevo stock (esto lo devolveremos en el
-                    // repsonse)
-                    productosActualizados.add(new ProductoStockDTO(
-                            productoOrden.getIdProducto(),
-                            productoOrden.getNombreProducto(),
-                            stockAnterior,
-                            stockNuevo,
-                            itemOrden.getCantidad()));
+                Integer stockAnterior = producto.getStockProducto();
+                Integer stockNuevo = stockAnterior - item.getCantidad();
 
-                }
+                producto.setStockProducto(stockNuevo);
+                productoRepository.save(producto);
+
+                // Registrar el cambio
+                productosActualizados.add(new ProductoStockDTO(
+                        producto.getIdProducto(),
+                        producto.getNombreProducto(),
+                        stockAnterior,
+                        stockNuevo,
+                        item.getCantidad()));
+            }
 
             return new ActualizacionStockResponseDTO(
                     true,
-                    "Stock actualizado correctamente para la orden: " + request.getIdOrden(),
+                    "Stock actualizado exitosamente para la orden: " + request.getIdOrden(),
                     productosActualizados,
                     null);
+
         } catch (ProductoNotFoundException | StockInsuficienteException | ProductoNotValidException e) {
             errores.add(e.getMessage());
             throw e; // Esto provocará el rollback de la transacción
